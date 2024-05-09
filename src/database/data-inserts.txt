@@ -1,0 +1,12 @@
+insert into event_categories(name, display_order) values('Musica', 1)
+insert into provinces(name, full_name, latitude, longitude, display_order) values('Ciudad Autónoma de Buenos Aires', 'Ciudad Autónoma de Buenos Aires', -34.61444091796875, -58.445877075195312, 1)
+insert into locations(name, id_province, latitude, longitude) values('Nuñez', 1, -34.548805236816406, -58.463230133056641)
+insert into event_locations(id_location, name, full_address, max_capacity, latitude, longitude) values(1, 'Club Atlético River Plate', 'Av. Pres. Figueroa Alcorta 7597', '84567', -34.54454505693356, -58.4494761175694)
+insert into users(first_name, last_name, username, password) values('Julian', 'Schiffer', 'Jschiffer', '1234')
+INSERT INTO events (name, description, id_event_category, id_event_location, start_date, duration_in_minutes, price, enabled_for_enrollment, max_assistance, id_creator_user)
+VALUES ('Taylor Swift', 'Un alto show', 1, 1, TO_TIMESTAMP('2024-03-21T03:00:00.000Z', 'YYYY-MM-DD"T"HH24:MI:SS.MSZ'), 210, 15500, true, 120000, 2);
+insert into tags(name) values('Rock')
+insert into tags(name) values('Pop')
+insert into event_tags(id_event, id_tag) values(2, 1)
+insert into event_tags(id_event, id_tag) values(2, 2)
+insert into event_enrollments(id_event, id_user, description, registration_date_time, attended, observations, rating) values(2, 2, 'Alto show', TO_TIMESTAMP('2024-01-21T03:00:00.000Z', 'YYYY-MM-DD"T"HH24:MI:SS.MSZ'), true, 'Terrible', 5)
