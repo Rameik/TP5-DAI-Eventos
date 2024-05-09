@@ -6,4 +6,14 @@ export default class EventService {
         const returnArray = await repo.getAllAsync();
         return returnArray;
     }
+    getEventByName = async () => {
+        const repo = new EventRepository();
+        const returnArray = await repo.getEventByName();
+        return returnArray;
+    }
+    getEventByCategory = async () => {
+        const repo = new EventRepository();
+        const returnArray = await repo.getEventByCategory();
+        return returnArray;
+    }
 }
