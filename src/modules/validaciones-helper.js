@@ -14,6 +14,17 @@ class ValidacionesHelper {
         return value === undefined || value === null ? defaultValue : value
     };
     
+    getDateOrDefault = (value, defaultValue) => {
+        var fechaf = value.split("/");
+        var day = fechaf[0];
+        var month = fechaf[1];
+        var year = fechaf[2];
+        var date = new Date(year,month,'0');
+        if((day-0)>(date.getDate()-0)){
+            return defaultValue;
+        }
+        return value;
+    };
 }
 
 export default new ValidacionesHelper();

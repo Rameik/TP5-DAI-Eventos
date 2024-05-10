@@ -6,14 +6,14 @@ export default class EventService {
         const returnArray = await repo.getAllAsync();
         return returnArray;
     }
-    getEventByName = async () => {
+    getEventByFilters = async (name, category, date, tag) => {
         const repo = new EventRepository();
-        const returnArray = await repo.getEventByName();
+        const returnArray = await repo.getEventByFilters(name, category, date, tag);
         return returnArray;
     }
-    getEventByCategory = async () => {
+    getEventById = async (id) => {
         const repo = new EventRepository();
-        const returnArray = await repo.getEventByCategory();
+        const returnArray = await repo.getEventById(id);
         return returnArray;
     }
 }

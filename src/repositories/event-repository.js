@@ -17,13 +17,26 @@ export default class EventRepository {
         }
         return response;
     }
-    getEventByName = async (name) => {
+
+    getEventByFilters = async (name = "", category = "", date = "", tag = "") => {
         let response = null;
         const client = new Client(config);
+        let filters = [{ type: name, addString: ' LOWER(E.name) like LOWER($'}, { type: category, addString: ' EC.name like $' }, { type: date, addString: ' E.start_date like $' }, { type: tag, addString: ' T.name like $' }]
+        filters = filters.filter((element) => element.type !== "")
+        let notEmpty = filters.map((element, index) => {
+            element.addString = element.addString.concat(index + 1)
+            if(element.addString.includes("E.name")) {
+                element.type = `%${element.type}%` 
+                element.addString = element.addString.concat(')')
+            }
+            if(index < 3 && index + 1 !== filters.length) {element.addString = element.addString.concat(" and")}
+            return element
+        })
         try {
             await client.connect();
-            const sql = `SELECT * FROM events where name like $1`;
-            const values = [name];
+            let sql = `SELECT E.id, E.name, E.description, E.start_date, E.duration_in_minutes, E.price, E.enabled_for_enrollment, E.max_assistance FROM events E INNER JOIN event_categories EC on E.id_event_category = EC.id INNER JOIN event_tags ET on ET.id_event = E.id INNER JOIN tags T on ET.id_tag = T.id where`;
+            notEmpty.forEach(element => sql = sql.concat(element.addString))
+            const values = notEmpty.map((element) => element.type);
             const result = await client.query(sql, values);
             await client.end();
             response = result.rows[0];
@@ -32,51 +45,7 @@ export default class EventRepository {
         }
         return response;
     }
-    getEventByCategory = async (category) => {
-        let response = null;
-        const client = new Client(config);
-        try {
-            await client.connect();
-            const sql = `SELECT * FROM events E INNER JOIN event_categories EC on E.id_event_category = EC.id where EC.name like $1`;
-            const values = [category];
-            const result = await client.query(sql, values);
-            await client.end();
-            response = result.rows;
-        } catch (error) {
-            console.log(error);
-        }
-        return response;
-    }
-    getEventByDate = async (date) => {
-        let response = null;
-        const client = new Client(config);
-        try {
-            await client.connect();
-            const sql = `SELECT * FROM events where start_date like $1`;
-            const values = [date];
-            const result = await client.query(sql, values);
-            await client.end();
-            response = result.rows;
-        } catch (error) {
-            console.log(error);
-        }
-        return response;
-    }
-    getEventByTag = async (tag) => {
-        let response = null;
-        const client = new Client(config);
-        try {
-            await client.connect();
-            const sql = `SELECT * FROM events E INNER JOIN event_tags ET on ET.id_event = E.id INNER JOIN tags T on ET.id_tag = T.id where T.name like $1`;
-            const values = [tag];
-            const result = await client.query(sql, values);
-            await client.end();
-            response = result.rows;
-        } catch (error) {
-            console.log(error);
-        }
-        return response;
-    }
+
     getEventById = async (id) => {
         let response = null;
         const client = new Client(config);
