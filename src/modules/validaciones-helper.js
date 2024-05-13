@@ -15,6 +15,7 @@ class ValidacionesHelper {
     };
     
     getDateOrDefault = (value, defaultValue) => {
+        if (!value) return defaultValue 
         var fechaf = value.split("/");
         var day = fechaf[0];
         var month = fechaf[1];
@@ -24,6 +25,10 @@ class ValidacionesHelper {
             return defaultValue;
         }
         return value;
+    };
+
+    getBooleanOrDefault = (value, defaultValue) => {
+        return 'boolean' === typeof value ? value : defaultValue
     };
 }
 
