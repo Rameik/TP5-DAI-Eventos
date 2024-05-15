@@ -187,4 +187,204 @@ export default class EventRepository {
         }
         return response;
     }
+    deleteEvent = async (idEvent, idUser) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `DELETE from events where id = $1 and id_creator_user = $2;`
+            const values = [idEvent, idUser];
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rowCount;
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    patchRankingEvent = async (idEvent, idUser, rating) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `UPDATE event_enrollments set rating = $1 where id_event = $2 and id_user = $3`
+            const values = [rating, idEvent, idUser];
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rowCount;
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    getAllLocations = async () => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT L.id, L.name, L.latitude, L.longitude, json_build_object('id', P.id, 'name', P.name, 'full_name', P.full_name, 'latitude', P.latitude, 'longitude', P.longitude, 'display_order', P.display_order) as province FROM locations L INNER JOIN provinces P on L.id_province = P.id `;
+            const result = await client.query(sql);
+            await client.end();
+            response = result.rows;
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    getLocationById = async (id) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT L.id, L.name, L.latitude, L.longitude, json_build_object('id', P.id, 'name', P.name, 'full_name', P.full_name, 'latitude', P.latitude, 'longitude', P.longitude, 'display_order', P.display_order) as province FROM locations L INNER JOIN provinces P on L.id_province = P.id where L.id = $1`;
+            const values = [id]
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rows[0];
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    getLocationByProvinceId = async (id) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT L.id, L.name, L.latitude, L.longitude FROM locations L where L.id_province = $1`;
+            const values = [id]
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rows;
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    getAllEventLocations = async () => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT EL.id, EL.name, EL.full_address, EL.latitude, EL.longitude, EL.max_capacity, json_build_object('id', L.id, 'name', L.name, 'latitude', L.latitude, 'longitude', L.longitude, 'province', json_build_object('id', P.id, 'name', P.name, 'full_name', P.full_name, 'latitude', P.latitude, 'longitude', P.longitude, 'display_order', P.display_order)) as location from event_locations EL INNER JOIN locations L on EL.id_location = L.id INNER JOIN provinces P on L.id_province = P.id`;
+            const result = await client.query(sql);
+            await client.end();
+            response = result.rows;
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    getEventLocationById = async (id) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT EL.id, EL.name, EL.full_address, EL.latitude, EL.longitude, EL.max_capacity, json_build_object('id', L.id, 'name', L.name, 'latitude', L.latitude, 'longitude', L.longitude, 'province', json_build_object('id', P.id, 'name', P.name, 'full_name', P.full_name, 'latitude', P.latitude, 'longitude', P.longitude, 'display_order', P.display_order)) as location from event_locations EL INNER JOIN locations L on EL.id_location = L.id INNER JOIN provinces P on L.id_province = P.id where EL.id = $1`;
+            const values = [id]
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rows[0];
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    getEventLocationByLocationId = async (id) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT EL.id, EL.name, EL.full_address, EL.max_capacity, EL.latitude, EL.longitude FROM event_locations EL where EL.id_location = $1`;
+            const values = [id]
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rows;
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    getAllEventCategories = async () => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT * from event_categories`;
+            const result = await client.query(sql);
+            await client.end();
+            response = result.rows;
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    getEventCategoryById = async (idCategory) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT * from event_categories where id = $1`;
+            const values = [idCategory]
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rows[0];
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    postEventCategory = async (name, displayOrder) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `INSERT INTO event_categories(name, display_order) values($1, $2)`;
+            const values = [name, displayOrder]
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rowCount;
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    updateEventCategory = async (id, name, displayOrder) => {
+        let response = null;
+        const client = new Client(config);
+        let data = [{ type: name, addString: ' name = $'}, { type: displayOrder, addString: ' display_order = $' }, { type: id, addString: ' where id = $' }]
+        data = data.filter((element) => element.type !== "")
+        let notEmpty = data.map((element, index) => {
+            element.addString = element.addString.concat(index + 1);
+            if(index < data.length - 1 && index + 1 !== data.length - 1) element.addString = element.addString.concat(",")
+            return element
+        })
+        try {
+            await client.connect();
+            let sql = `UPDATE event_categories SET`;
+            notEmpty.forEach(element => sql = sql.concat(element.addString))
+            const values = notEmpty.map((element) => element.type);
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rowCount;
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    deleteEventCategory = async (idEventCategory) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `DELETE from event_categories where id = $1`
+            const values = [idEventCategory];
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rowCount;
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
 }

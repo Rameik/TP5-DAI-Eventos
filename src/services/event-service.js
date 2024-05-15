@@ -46,4 +46,69 @@ export default class EventService {
         const returnArray = await repo.putUpdateEvent(idEvent, name, description, idEventCategory, idEventLocation, durationMinutes, price, enabledForEnrollment, maxAssistance, idUser, startDate);
         return returnArray;
     }
+    deleteEvent = async (idEvent, idUser) => {
+        const repo = new EventRepository();
+        const returnArray = await repo.deleteEvent(idEvent, idUser);
+        return returnArray;
+    }
+    patchRankingEvent = async (idEvent, idUser, rating) => {
+        const repo = new EventRepository();
+        const returnArray = await repo.patchRankingEvent(idEvent, idUser, rating);
+        return returnArray;
+    }
+    getAllLocations = async () => {
+        const repo = new EventRepository();
+        const returnArray = await repo.getAllLocations();
+        return returnArray;
+    }
+    getLocationById = async (id) => {
+        const repo = new EventRepository();
+        const returnArray = await repo.getLocationById(id);
+        return returnArray;
+    }
+    getLocationByProvinceId = async (id) => {
+        const repo = new EventRepository();
+        const returnArray = await repo.getLocationByProvinceId(id);
+        return returnArray;
+    }
+    getAllEventLocations = async () => {
+        const repo = new EventRepository();
+        const returnArray = await repo.getAllEventLocations();
+        return returnArray;
+    }
+    getEventLocationById = async (id) => {
+        const repo = new EventRepository();
+        const returnArray = await repo.getEventLocationById(id);
+        return returnArray;
+    }
+    getEventLocationByLocationId = async (id) => {
+        const repo = new EventRepository();
+        const returnArray = await repo.getEventLocationByLocationId(id);
+        return returnArray;
+    }
+    getAllEventCategories = async () => {
+        const repo = new EventRepository();
+        const returnArray = await repo.getAllEventCategories();
+        return returnArray;
+    }
+    getEventCategoryById = async (id) => {
+        const repo = new EventRepository();
+        const returnArray = await repo.getEventCategoryById(id);
+        return returnArray;
+    }
+    postEventCategory = async (name, displayOrder) => {
+        const repo = new EventRepository();
+        const returnArray = await repo.postEventCategory(name, displayOrder);
+        return returnArray;
+    }
+    updateEventCategory = async (id, name, displayOrder) => {
+        const repo = new EventRepository();
+        const returnArray = await repo.updateEventCategory(id, name, displayOrder);
+        return returnArray;
+    }
+    deleteEventCategory  = async (id) => {
+        const repo = new EventRepository();
+        const returnArray = await repo.deleteEventCategory(id);
+        return returnArray;
+    }
 }
