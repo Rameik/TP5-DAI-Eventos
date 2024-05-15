@@ -97,7 +97,7 @@ router.get("/myEvents", async (req, res) => {
     }
 });
 
-router.post("/createEvent", async (req, res) => { // no tira el error
+router.post("/createEvent", async (req, res) => {
     const name = ValidacionesHelper.getStringOrDefault(req.body.name, '')
     const description = ValidacionesHelper.getStringOrDefault(req.body.description, '')
     const idEventCategory = ValidacionesHelper.getIntegerOrDefault(req.body.id_event_category, '')
@@ -110,7 +110,7 @@ router.post("/createEvent", async (req, res) => { // no tira el error
     try{
         const access_token = req.headers.authorization.split(' ')[1];
         let payloadOriginal = await jwt.verify(access_token, process.env.SECRET_KEY)
-        if([name, description, idEventCategory, idEventLocation, durationMinutes, price, enabledForEnrollment, maxAssistance, startDate].some(element => element == null || element === "")) throw new Error("Un valor ingresado estaba vacío!")
+        if([name, description, idEventCategory, idEventLocation, durationMinutes, price, enabledForEnrollment, maxAssistance, startDate].some(element => element == null || element === "")) throw ("Un valor ingresado estaba vacío!")
         const response = await svc.postCreateEvent(name, description, idEventCategory, idEventLocation, durationMinutes, price, enabledForEnrollment, maxAssistance, payloadOriginal.id, startDate)
         return response > 0 ? res.status(201).send({success: true, results: "Evento creado con exito!"}) : res.status(404).send({success: false, message:`No se pudo crear el evento.`});
     }
@@ -163,7 +163,7 @@ router.patch("/:id/enrollment/:entero", async (req, res) => {
     const rating = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
         if(idEvent == 0) return res.status(404).send(`Id invalido.`)
-        if(rating > 10 || rating < 0) throw new Error("El valor del rating no se encuentra entre los números 1 al 10") 
+        if(rating > 10 || rating < 0) throw ("El valor del rating no se encuentra entre los números 1 al 10") 
         const access_token = req.headers.authorization.split(' ')[1];
         let payloadOriginal = await jwt.verify(access_token, process.env.SECRET_KEY)
         const response = await svc.patchRankingEvent(idEvent, payloadOriginal.id, rating)
@@ -228,7 +228,7 @@ router.post("/eventCategory", async (req, res) => {
     const name = ValidacionesHelper.getStringOrDefault(req.body.name, "")
     const displayOrder = ValidacionesHelper.getIntegerOrDefault(req.body.display_order, "")
     try{
-        if ([name, displayOrder].some(element => element == "")) throw new Error("Un valor ingresado estaba vacío!")
+        if ([name, displayOrder].some(element => element == "")) throw ("Un valor ingresado estaba vacío!")
         const response = await svc.postEventCategory(name, displayOrder)
         return response > 0 ? res.status(201).send({success: true, results: "Categoría creada con exito!"}) : res.status(404).send({success: false, message:`No se pudo crear la categoría.`});
     }
@@ -242,7 +242,7 @@ router.put("/eventCategory", async (req, res) => {
     const name = ValidacionesHelper.getStringOrDefault(req.body.name, "")
     const displayOrder = ValidacionesHelper.getIntegerOrDefault(req.body.display_order, "")
     try{
-        if(id == 0 ) throw new Error("Id invalido, tuvo valor 0.")
+        if(id == 0 ) throw ("Id invalido, tuvo valor 0.")
         const response = await svc.updateEventCategory(id, name, displayOrder)
         return response > 0 ? res.status(201).send({success: true, results: "Categoría modificada con exito!"}) : res.status(404).send({success: false, message:`No se pudo modificar la categoría.`});
     }
@@ -294,3 +294,5 @@ router.get("/eventLocation/location/:id", async (req, res) => {
         return res.status(400).send({success: false, error: e})
     }
 });
+
+// Hacer consultas individuales para comprobar si existe un id por ejemplo?se
