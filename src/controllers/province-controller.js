@@ -12,7 +12,7 @@ router.get("", async (req, res) => {
 router.get("/:id", async (req, res) => {
     const id = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     const response = await svc.getByIdAsync(id);
-    return response ? res.status(200).send(response) : res.status(404).send(`No existe una provincia con el id: ${id}`);
+    return response ? res.status(200).send(response) : res.status(404).send({success: false, message: `No existe una provincia con el id: ${id}`});
 })
 
 router.post("", async (req, res) => {
@@ -22,6 +22,7 @@ router.post("", async (req, res) => {
         const latitude = ValidacionesHelper.getFloatOrDefault(req.body.latitude, 0);
         const longitude = ValidacionesHelper.getFloatOrDefault(req.body.longitude, 0);
         const displayOrder = ValidacionesHelper.getIntegerOrDefault(req.body.display_order, '');
+        if([name, fullName, latitude, longitude, displayOrder].some(element => element == "" || element == 0)) throw ("Un valor ingresado estaba vacío!")
         const entity = {
             name: name,
             fullName: fullName,
@@ -30,50 +31,48 @@ router.post("", async (req, res) => {
             displayOrder: displayOrder
         }
         const response = await svc.createAsync(entity);
-        return response ? res.status(201).send('Created (201)') : res.status(400).send(`Ocurrio un error en la inserción del registro`)
-    } catch (error) {
-        return res.status(400).send(`Ocurrio un error: ${error}`)
+        return response ? res.status(201).send({success: true, results: "Provincia creada con exito!"}) : res.status(400).send({success: false, message: `Ocurrio un error en la inserción del registro`})
+    } catch (e) {
+        return res.status(400).send({success: false, error: e})
     }
 })
 
-router.put('', async (req, res) => {
+router.put('', async (req, res) => { // comprobar si anda
     const id = ValidacionesHelper.getIntegerOrDefault(req.body.id, 0)
-    const provinciasArray = await svc.getAllAsync();
-    const index = provinciasArray.findIndex(element => element.id === id)
-    if(index != -1){
-        try {
-            let name = ValidacionesHelper.getStringOrDefault(req.body.name, '').length > 0 ? ValidacionesHelper.getStringOrDefault(req.body.name, '') : provinciasArray[index].name;
-            let fullName = ValidacionesHelper.getStringOrDefault(req.body.full_name, '').length > 0 ? ValidacionesHelper.getStringOrDefault(req.body.full_name, '') : provinciasArray[index].fullName
-            let latitude = ValidacionesHelper.getFloatOrDefault(req.body.latitude, '').length > 0 ? ValidacionesHelper.getFloatOrDefault(req.body.latitude, '') : provinciasArray[index].latitude
-            let longitude = ValidacionesHelper.getFloatOrDefault(req.body.longitude, '').length > 0 ? ValidacionesHelper.getFloatOrDefault(req.body.longitude, '') : provinciasArray[index].longitude
-            let displayOrder = ValidacionesHelper.getIntegerOrDefault(req.body.display_order, '').length > 0 ? ValidacionesHelper.getIntegerOrDefault(req.body.display_order, '') : provinciasArray[index].displayOrder
-            const entity = {
-                id: id,
-                name: name,
-                fullName: fullName,
-                latitude: latitude,
-                longitude: longitude,
-                displayOrder: displayOrder
-            }
-            const response = await svc.updateAsync(entity);
-            return response ? res.status(201).send('Created (201)') : res.status(400).send(`Ocurrio un error en la modificación del registro`)
-        } catch (error) {
-            return res.status(400).send(`Ocurrio un error: ${error}`)
+    try {
+        if(id == 0) throw (`Id invalido.`)
+        const provincia = await svc.getByIdAsync(id);
+        if (!provincia) return res.status(404).send(`No existe una provincia con el id: ${id}`)
+        let name = ValidacionesHelper.getStringOrDefault(req.body.name, '').length > 0 ? ValidacionesHelper.getStringOrDefault(req.body.name, '') : provincia.name;
+        let fullName = ValidacionesHelper.getStringOrDefault(req.body.full_name, '').length > 0 ? ValidacionesHelper.getStringOrDefault(req.body.full_name, '') : provincia.fullName
+        let latitude = ValidacionesHelper.getFloatOrDefault(req.body.latitude, '').length > 0 ? ValidacionesHelper.getFloatOrDefault(req.body.latitude, '') : provincia.latitude
+        let longitude = ValidacionesHelper.getFloatOrDefault(req.body.longitude, '').length > 0 ? ValidacionesHelper.getFloatOrDefault(req.body.longitude, '') : provincia.longitude
+        let displayOrder = ValidacionesHelper.getIntegerOrDefault(req.body.display_order, '').length > 0 ? ValidacionesHelper.getIntegerOrDefault(req.body.display_order, '') : provincia.displayOrder
+        const entity = {
+            id: id,
+            name: name,
+            fullName: fullName,
+            latitude: latitude,
+            longitude: longitude,
+            displayOrder: displayOrder
         }
+        const response = await svc.updateAsync(entity);
+        return response > 0 ? res.status(201).send({success: true, results: "Provincia modificada con exito!"}) : res.status(400).send({success: false, message: `Ocurrio un error en la modificación del registro`})
+    } catch (e) {
+        return res.status(400).send({success: false, error: e})
     }
-    else{ return res.status(404).send(`No existe una provincia con el id: ${id}`) }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => { // comprobar si anda
     const id = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
-    const provinciasArray = await svc.getAllAsync();
-    const index = provinciasArray.findIndex((element) => element.id === id);
-
-    if(index === -1){
-        return res.status(404).send(`No existe una provincia con el id: ${id}`);
-    }
-    else{
+    try {
+        if(id == 0) throw (`Id invalido.`)
+        const provincia = await svc.getByIdAsync(id);
+        if (!provincia) return res.status(404).send(`No existe una provincia con el id: ${id}`)
         const response = await svc.deleteByIdAsync(id);
-        return response ? res.status(200).send('Provincia encontrada y eliminada! (200)') : res.status(400).send(`Ocurrio un error en la eliminación del registro`)
+        return response > 0 ? res.status(200).send({success: true, results: "Provincia eliminada con exito!"}) : res.status(400).send({success: false, message: `Ocurrio un error en la eliminación del registro`})
+    } catch (e) {
+        return res.status(400).send({success: false, error: e})
     }
+    
 })

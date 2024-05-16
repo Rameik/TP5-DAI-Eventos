@@ -29,7 +29,7 @@ router.get("", async (req, res) => {
 router.get("/:id", async (req, res) => {
     const id = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
-        if( id == 0 ) { return res.status(400).send(`Id invalido.`);}
+        if( id == 0 ) throw (`Id invalido.`)
         const response = await svc.getEventById(id);
         return response.length > 0 ? res.status(200).json(response) : res.status(404).send(`No se encontró el id: ${id}`);
     }
@@ -41,7 +41,7 @@ router.get("/:id", async (req, res) => {
 router.get("/:id/enrollment", async (req, res) => {
     const id = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
-        if(id == 0) { return res.status(400).send(`Id invalido.`)}
+        if(id == 0) throw (`Id invalido.`)
         const firstName = ValidacionesHelper.getStringOrDefault(req.query.first_name, '')
         const lastName = ValidacionesHelper.getStringOrDefault(req.query.last_name, '')
         const user = ValidacionesHelper.getStringOrDefault(req.query.username, '')
@@ -49,35 +49,39 @@ router.get("/:id/enrollment", async (req, res) => {
         const rating = ValidacionesHelper.getIntegerOrDefault(req.query.rating, '') 
 
         const response = await svc.getEventParticipants(id, firstName, lastName, user, attended, rating);
-        return response.length > 0 ? res.status(200).json(response) : res.status(404).send(`No se encontraron resultados.`);
+        return response ? res.status(200).json(response) : res.status(404).send(`No se encontraron resultados.`);
     }
     catch(e){
         return res.status(400).send({success: false, error: e})
     }
 });
 
-router.post("/:id/enrollment", async (req, res) => {
+router.post("/:id/enrollment", async (req, res) => { // comprobar si anda
     const idEvent = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
-        if(idEvent == 0) { return res.status(404).send(`Id invalido.`)}
+        if(idEvent == 0) throw (`Id invalido.`)
         const access_token = req.headers.authorization.split(' ')[1];
         let payloadOriginal = await jwt.verify(access_token, process.env.SECRET_KEY)
         const response = await svc.postInscribeEvent(idEvent, payloadOriginal.id)
-        return response > 0 ? res.status(201).send({success: true, message: "Registro exitoso!"}) : res.status(404).send({success: false, message:`No se encontraron resultados para el id: ${idEvent}.`});
+        if (response.error === 400) throw (response.errorMessage)
+        else if (response.error === 404) return res.status(404).send({success: false, message: response.errorMessage})
+        return response.data > 0 ? res.status(201).send({success: true, message: "Registro exitoso!"}) : res.status(404).send({success: false, message:`No se pudo registrar al evento.`});
     }
     catch(e){
         return res.status(400).send({success: false, error: e})
     }
 });
 
-router.delete("/:id/enrollment", async (req, res) => {
+router.delete("/:id/enrollment", async (req, res) => { // comprobar si anda
     const idEvent = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
-        if(idEvent == 0) { return res.status(404).send(`Id invalido.`)}
+        if(idEvent == 0) throw (`Id invalido.`)
         const access_token = req.headers.authorization.split(' ')[1];
         let payloadOriginal = await jwt.verify(access_token, process.env.SECRET_KEY)
         const response = await svc.deleteInscriptionEvent(idEvent, payloadOriginal.id)
-        return response > 0 ? res.status(201).send({success: true, message: "Inscripción eliminada exitosamente!"}) : res.status(404).send({success: false, message: `No se encontraron resultados para el id: ${idEvent}.`});
+        if (response.error === 400) throw (response.errorMessage)
+        else if (response.error === 404) return res.status(404).send({success: false, message: response.errorMessage})
+        return response > 0 ? res.status(201).send({success: true, message: "Inscripción eliminada exitosamente!"}) : res.status(404).send({success: false, message: `No se pudo eliminar la inscripción al evento.`});
     }
     catch(e){
         return res.status(400).send({success: false, error: e})
@@ -119,7 +123,7 @@ router.post("/createEvent", async (req, res) => {
     }
 });
 
-router.put("/updateEvent", async (req, res) => {
+router.put("/updateEvent", async (req, res) => { // comprobar si anda
     const idEvent = ValidacionesHelper.getIntegerOrDefault(req.body.id, 0)
     const name = ValidacionesHelper.getStringOrDefault(req.body.name, '')
     const description = ValidacionesHelper.getStringOrDefault(req.body.description, '')
@@ -131,10 +135,11 @@ router.put("/updateEvent", async (req, res) => {
     const startDate = ValidacionesHelper.getDateOrDefault(req.body.start_date, '')
     const maxAssistance = ValidacionesHelper.getIntegerOrDefault(req.body.max_assistance, '')
     try{
-        if(idEvent == 0) { return res.status(404).send(`Id invalido.`)}
+        if(idEvent == 0) throw (`Id invalido.`)
         const access_token = req.headers.authorization.split(' ')[1];
         let payloadOriginal = await jwt.verify(access_token, process.env.SECRET_KEY)
         const response = await svc.putUpdateEvent(idEvent, name, description, idEventCategory, idEventLocation, durationMinutes, price, enabledForEnrollment, maxAssistance, payloadOriginal.id, startDate)
+        if (response.error === 404) return res.status(404).send({success: false, message: response.errorMessage})
         return response > 0 ? res.status(201).send({success: true, results: "Evento creado con exito!"}) : res.status(404).send({success: false, message:`No se pudo modificar el evento.`});
     }
     catch(e){
@@ -142,13 +147,14 @@ router.put("/updateEvent", async (req, res) => {
     }
 });
 
-router.delete("/deleteEvent/:id", async (req, res) => {
+router.delete("/deleteEvent/:id", async (req, res) => { // comprobar si anda
     const idEvent = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
         if(idEvent == 0) { return res.status(404).send(`Id invalido.`) }
         const access_token = req.headers.authorization.split(' ')[1];
         let payloadOriginal = await jwt.verify(access_token, process.env.SECRET_KEY)
         const response = await svc.deleteEvent(idEvent, payloadOriginal.id)
+        if (response.error === 404) return res.status(404).send({success: false, message: response.errorMessage})
         return response > 0 ? res.status(201).send({success: true, results: "Evento eliminado con exito!"}) : res.status(404).send({success: false, message:`No se pudo eliminar el evento.`});
     }
     catch(e){
@@ -156,25 +162,27 @@ router.delete("/deleteEvent/:id", async (req, res) => {
     }
 });
 
-//Hacer rating de un evento | falta levantar errores; El usuario no se encuentre registrado al evento, El evento no ha finalizado aún, el id del evento no exista. 
+// Hacer rating de un evento
 
-router.patch("/:id/enrollment/:entero", async (req, res) => {
+router.patch("/:id/enrollment/:entero", async (req, res) => { // comprobar si anda
     const idEvent = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     const rating = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
-        if(idEvent == 0) return res.status(404).send(`Id invalido.`)
+        if(idEvent == 0) throw (`Id invalido.`)
         if(rating > 10 || rating < 0) throw ("El valor del rating no se encuentra entre los números 1 al 10") 
         const access_token = req.headers.authorization.split(' ')[1];
         let payloadOriginal = await jwt.verify(access_token, process.env.SECRET_KEY)
         const response = await svc.patchRankingEvent(idEvent, payloadOriginal.id, rating)
-        return response > 0 ? res.status(200).send({success: true, results: "Evento rankeado con exito!"}) : res.status(404).send({success: false, message:`No se pudo eliminar el evento.`});
+        if (response.error === 404) return res.status(404).send({success: false, message: response.errorMessage})
+        if (response.error === 400) throw (response.errorMessage)
+        return response > 0 ? res.status(200).send({success: true, results: "Evento rankeado con exito!"}) : res.status(404).send({success: false, message:`No se pudo rankear el evento.`});
     }
     catch(e){
         return res.status(400).send({success: false, error: e})
     }
 });
 
-//Locations
+// Locations
 
 router.get("/location", async (req, res) => {
     const response = await svc.getAllLocations();
@@ -184,7 +192,7 @@ router.get("/location", async (req, res) => {
 router.get("/location/:id", async (req, res) => {
     const idLocation = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
-        if(idLocation == 0) { return res.status(404).send(`Id invalido.`) }
+        if(idLocation == 0) throw (`Id invalido.`)
         const response = await svc.getLocationById(idLocation)
         return response ? res.status(200).send({success: true, results: response}) : res.status(404).send({success: false, message:`No se encontró ninguna localidad para el id: ${idLocation}`});
     }
@@ -196,7 +204,7 @@ router.get("/location/:id", async (req, res) => {
 router.get("/location/province/:id", async (req, res) => {
     const idProvince = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
-        if(idProvince == 0) { return res.status(404).send(`Id invalido.`) }
+        if(idProvince == 0) throw (`Id invalido.`)
         const response = await svc.getLocationByProvinceId(idProvince)
         return response.length > 0 ? res.status(200).send({success: true, results: response}) : res.status(404).send({success: false, message:`No se encontró ninguna localidad para la provincia: ${idProvince}`});
     }
@@ -205,7 +213,7 @@ router.get("/location/province/:id", async (req, res) => {
     }
 });
 
-//Categorias
+// Categorias
 
 router.get("/eventCategory", async (req, res) => {
     const response = await svc.getAllEventCategories();
@@ -215,7 +223,7 @@ router.get("/eventCategory", async (req, res) => {
 router.get("/eventCategory/:id", async (req, res) => {
     const idEventCategory = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
-        if(idEventCategory == 0) { return res.status(404).send(`Id invalido.`) }
+        if(idEventCategory == 0) throw (`Id invalido.`)
         const response = await svc.getEventCategoryById(idEventCategory)
         return response ? res.status(200).send({success: true, results: response}) : res.status(404).send({success: false, message:`No se encontró ninguna categoría para el id: ${idEventCategory}`});
     }
@@ -254,7 +262,7 @@ router.put("/eventCategory", async (req, res) => {
 router.delete("/eventCategory/:id", async (req, res) => {
     const idEventCategory = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
-        if(idEventCategory == 0) { return res.status(404).send(`Id invalido.`) }
+        if(idEventCategory == 0) throw (`Id invalido.`) 
         const response = await svc.deleteEventCategory(idEventCategory)
         return response > 0 ? res.status(201).send({success: true, results: "Categoría eliminada con exito!"}) : res.status(404).send({success: false, message:`No se encontró ninguna categoría para el id: ${idEventCategory}`});
     }
@@ -264,7 +272,7 @@ router.delete("/eventCategory/:id", async (req, res) => {
 
 });
 
-//Ubicaciones de Eventos
+// Ubicaciones de Eventos
 
 router.get("/eventLocation", async (req, res) => {
     const response = await svc.getAllEventLocations();
@@ -274,7 +282,7 @@ router.get("/eventLocation", async (req, res) => {
 router.get("/eventLocation/:id", async (req, res) => {
     const idEventLocation = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
-        if(idEventLocation == 0) { return res.status(404).send(`Id invalido.`) }
+        if(idEventLocation == 0) throw (`Id invalido.`)
         const response = await svc.getEventLocationById(idEventLocation)
         return response ? res.status(200).send({success: true, results: response}) : res.status(404).send({success: false, message:`No se encontró ninguna localidad para el id: ${idLocation}`});
     }
@@ -286,7 +294,7 @@ router.get("/eventLocation/:id", async (req, res) => {
 router.get("/eventLocation/location/:id", async (req, res) => {
     const idLocation = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
-        if(idLocation == 0) { return res.status(404).send(`Id invalido.`) }
+        if(idLocation == 0) throw (`Id invalido.`)
         const response = await svc.getEventLocationByLocationId(idLocation)
         return response.length > 0 ? res.status(200).send({success: true, results: response}) : res.status(404).send({success: false, message:`No se encontró ninguna localidad para la provincia: ${idProvince}`});
     }
@@ -294,5 +302,3 @@ router.get("/eventLocation/location/:id", async (req, res) => {
         return res.status(400).send({success: false, error: e})
     }
 });
-
-// Hacer consultas individuales para comprobar si existe un id por ejemplo?se

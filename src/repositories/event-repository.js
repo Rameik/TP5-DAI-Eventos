@@ -387,4 +387,49 @@ export default class EventRepository {
         }
         return response;
     }
+    getQuantInscriptions = async (idEvent) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT COUNT(*) FROM event_enrollments WHERE id_event = $1;`
+            const values = [idEvent];
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rows[0];
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    checkInscriptionToEvent = async (idEvent, idUser) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT COUNT(*) FROM event_enrollments WHERE id_event = $1 and id_user = $2;`
+            const values = [idEvent, idUser];
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rows[0];
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    getEventStartDate = async (idEvent) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT start_date FROM event_enrollments WHERE id_event = $1`
+            const values = [idEvent];
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rows[0];
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
 }
