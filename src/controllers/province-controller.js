@@ -1,4 +1,5 @@
 import {Router} from 'express';
+import ValidacionesHelper from '../modules/validaciones-helper.js';
 import ProvinceService from './../services/province-service.js'
 
 export const router = Router();
@@ -37,17 +38,17 @@ router.post("", async (req, res) => {
     }
 })
 
-router.put('', async (req, res) => { // comprobar si anda
+router.put('', async (req, res) => {
     const id = ValidacionesHelper.getIntegerOrDefault(req.body.id, 0)
     try {
         if(id == 0) throw (`Id invalido.`)
         const provincia = await svc.getByIdAsync(id);
-        if (!provincia) return res.status(404).send(`No existe una provincia con el id: ${id}`)
+        if (!provincia) return res.status(404).send({success: false, message: `No existe una provincia con el id: ${id}`})
         let name = ValidacionesHelper.getStringOrDefault(req.body.name, '').length > 0 ? ValidacionesHelper.getStringOrDefault(req.body.name, '') : provincia.name;
-        let fullName = ValidacionesHelper.getStringOrDefault(req.body.full_name, '').length > 0 ? ValidacionesHelper.getStringOrDefault(req.body.full_name, '') : provincia.fullName
-        let latitude = ValidacionesHelper.getFloatOrDefault(req.body.latitude, '').length > 0 ? ValidacionesHelper.getFloatOrDefault(req.body.latitude, '') : provincia.latitude
-        let longitude = ValidacionesHelper.getFloatOrDefault(req.body.longitude, '').length > 0 ? ValidacionesHelper.getFloatOrDefault(req.body.longitude, '') : provincia.longitude
-        let displayOrder = ValidacionesHelper.getIntegerOrDefault(req.body.display_order, '').length > 0 ? ValidacionesHelper.getIntegerOrDefault(req.body.display_order, '') : provincia.displayOrder
+        let fullName = ValidacionesHelper.getStringOrDefault(req.body.full_name, '').length > 0 ? ValidacionesHelper.getStringOrDefault(req.body.full_name, '') : provincia.full_name
+        let latitude = ValidacionesHelper.getFloatOrDefault(req.body.latitude, '') !== "" ? ValidacionesHelper.getFloatOrDefault(req.body.latitude, '') : provincia.latitude
+        let longitude = ValidacionesHelper.getFloatOrDefault(req.body.longitude, '') !== "" ? ValidacionesHelper.getFloatOrDefault(req.body.longitude, '') : provincia.longitude
+        let displayOrder = ValidacionesHelper.getIntegerOrDefault(req.body.display_order, '') > 0 ? ValidacionesHelper.getIntegerOrDefault(req.body.display_order, '') : provincia.display_order
         const entity = {
             id: id,
             name: name,
@@ -63,12 +64,12 @@ router.put('', async (req, res) => { // comprobar si anda
     }
 })
 
-router.delete('/:id', async (req, res) => { // comprobar si anda
+router.delete('/:id', async (req, res) => {
     const id = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try {
         if(id == 0) throw (`Id invalido.`)
         const provincia = await svc.getByIdAsync(id);
-        if (!provincia) return res.status(404).send(`No existe una provincia con el id: ${id}`)
+        if (!provincia) return res.status(404).send({success: false, message: `No existe una provincia con el id: ${id}`})
         const response = await svc.deleteByIdAsync(id);
         return response > 0 ? res.status(200).send({success: true, results: "Provincia eliminada con exito!"}) : res.status(400).send({success: false, message: `Ocurrio un error en la eliminación del registro`})
     } catch (e) {

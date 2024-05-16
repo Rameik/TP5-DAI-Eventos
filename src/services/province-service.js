@@ -16,7 +16,6 @@ export default class ProvinceService {
     createAsync = async (entity) => {
         const repo = new ProvinceRepository();
         const returnElement = await repo.createAsync(entity);
-        console.log(returnElement)
         return returnElement;
     }
 

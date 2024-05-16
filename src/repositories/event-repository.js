@@ -86,25 +86,7 @@ export default class EventRepository {
         }
         return response;
     }
-    postInscribeEvent = async (idEvent, idUser) => { // hacer trigger por si excede la capcidad maxima de registrados al evento
-        // do $$
-        // DECLARE 
-        //     cantAttendance int; 
-        // BEGIN
-        //     INSERT INTO event_enrollments (id_event, id_user, description, registration_date_time, attended, observations)
-        //     SELECT 2, 3, null, now(), false, null
-        //     WHERE EXISTS (SELECT 1 FROM events e WHERE e.id = 1);
-            
-            
-        //     SELECT COUNT(*) INTO cantAttendance
-        //     FROM event_enrollments
-        //     WHERE id_event = 2;
-            
-        //     IF cantAttendance > (select max_assistance from events where id = 2) THEN
-        //         RAISE EXCEPTION 'Se superó el límite de inscripciones al evento.';
-        //         ROLLBACK;
-        //     END IF;
-        // END $$;
+    postInscribeEvent = async (idEvent, idUser) => {
         let response = null;
         const client = new Client(config);
         try {
@@ -119,7 +101,7 @@ export default class EventRepository {
         }
         return response;
     }
-    deleteInscriptionEvent = async (idEvent, idUser) => { // hacer trigger por si excede la fecha de comienzo
+    deleteInscriptionEvent = async (idEvent, idUser) => {
         let response = null;
         const client = new Client(config);
         try {
@@ -202,13 +184,23 @@ export default class EventRepository {
         }
         return response;
     }
-    patchRankingEvent = async (idEvent, idUser, rating) => {
+    patchRankingEvent = async (idEvent, idUser, rating, description, attended, observations) => {
         let response = null;
         const client = new Client(config);
+        let data = [{ type: description, addString: ' description = $'}, { type: attended, addString: ' attended = $' }, { type: observations, addString: ' observations = $' }, { type: idEvent, addString: ' where id_event = $' }, { type: idUser, addString: ' and id_user = $' }]
+        data = data.filter((element) => element.type !== "")
+        let notEmpty = data.map((element, index) => {
+            element.addString = element.addString.concat(index + 1);
+            if(index == 0) element.addString = "," + element.addString
+            if(index < data.length - 2 && index + 1 !== data.length - 2) element.addString = element.addString.concat(",")
+            return element
+        })
         try {
             await client.connect();
-            const sql = `UPDATE event_enrollments set rating = $1 where id_event = $2 and id_user = $3`
-            const values = [rating, idEvent, idUser];
+            let values = notEmpty.map((element) => element.type);
+            values.push(rating)
+            let sql = `UPDATE event_enrollments set rating = $${values.length}`
+            notEmpty.forEach(element => sql = sql.concat(element.addString))
             const result = await client.query(sql, values);
             await client.end();
             response = result.rowCount;
@@ -422,8 +414,23 @@ export default class EventRepository {
         const client = new Client(config);
         try {
             await client.connect();
-            const sql = `SELECT start_date FROM event_enrollments WHERE id_event = $1`
+            const sql = `SELECT start_date FROM events WHERE id = $1`
             const values = [idEvent];
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rows[0];
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+    isEventCreator  = async (idEvent, idUser) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT COUNT(*) FROM events WHERE id = $1 and id_creator_user = $2;`
+            const values = [idEvent, idUser];
             const result = await client.query(sql, values);
             await client.end();
             response = result.rows[0];

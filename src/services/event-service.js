@@ -23,15 +23,23 @@ export default class EventService {
     }
     postInscribeEvent = async (idEvent, idUser) => {
         const repo = new EventRepository();
-        let response;
-        if(!this.getEventById(idEvent)){
+        let response = {};
+        const event = await this.getEventById(idEvent)
+        if(!event){
             response.error = 404
             response.errorMessage = `No se encontraron resultados para el id: ${idEvent}.`
             return response
         }
-        if(this.getQuantInscriptions(idEvent) >= event.max_assistance) {
+        const quant = await this.getQuantInscriptions(idEvent)
+        if(quant.count >= event.max_assistance) {
             response.error = 400
             response.errorMessage = `Se llenaron todos los espacios para el evento: ${idEvent}`
+            return response
+        }
+        const date = await this.getEventStartDate(idEvent)
+        if(date.start_date < new Date()) {
+            response.error = 400
+            response.errorMessage = `No se pudo completar su inscripcion debido a que el evento (${idEvent}), ya comenzó.`
             return response
         }
         response.data = await repo.postInscribeEvent(idEvent, idUser);
@@ -39,20 +47,22 @@ export default class EventService {
     }
     deleteInscriptionEvent = async (idEvent, idUser) => {
         const repo = new EventRepository();
-        let response;
-        if(!this.getEventById(idEvent)){
+        let response = {};
+        if(!await this.getEventById(idEvent)){
             response.error = 404
             response.errorMessage = `No se encontraron resultados para el id: ${idEvent}.`
             return response
         }
-        if(this.checkInscriptionToEvent(idEvent, idUser) > 0){
+        const count = await this.checkInscriptionToEvent(idEvent, idUser)
+        if(count.count == 0){
             response.error = 404
-            response.errorMessage = `El usuario: ${idUser}, no está registrado al evento: ${idEvent}.`
+            response.errorMessage = `El usuario (${idUser}), no está registrado al evento: ${idEvent}.`
             return response
         }
-        if(this.getEventStartDate(idEvent) < new Date()) {
+        const date = await this.getEventStartDate(idEvent)
+        if(date.start_date < new Date()) {
             response.error = 400
-            response.errorMessage = `No se pudo eliminar su inscripcion debido a que el evento: ${idEvent} ya comenzó.`
+            response.errorMessage = `No se pudo eliminar su inscripcion debido a que el evento (${idEvent}), ya comenzó.`
             return response
         }
         response.data = await repo.deleteInscriptionEvent(idEvent, idUser);
@@ -70,10 +80,16 @@ export default class EventService {
     }
     putUpdateEvent = async (idEvent, name, description, idEventCategory, idEventLocation, durationMinutes, price, enabledForEnrollment, maxAssistance, idUser, startDate) => {
         const repo = new EventRepository();
-        let response;
-        if(!this.getEventById(idEvent)){
+        let response = {};
+        if(!await this.getEventById(idEvent)){
             response.error = 404
             response.errorMessage = `No se encontraron resultados para el id: ${idEvent}.`
+            return response
+        }
+        const isOwner = await this.isEventCreator(idEvent, idUser)
+        if(isOwner.count == 0) {
+            response.error = 400
+            response.errorMessage = `El usuario (${idUser}) no es el creador del evento (${idEvent})`
             return response
         }
         response.data = await repo.putUpdateEvent(idEvent, name, description, idEventCategory, idEventLocation, durationMinutes, price, enabledForEnrollment, maxAssistance, idUser, startDate);
@@ -81,34 +97,42 @@ export default class EventService {
     }
     deleteEvent = async (idEvent, idUser) => {
         const repo = new EventRepository();
-        let response;
-        if(!this.getEventById(idEvent)){
+        let response = {};
+        if(!await this.getEventById(idEvent)){
             response.error = 404
             response.errorMessage = `No se encontraron resultados para el id: ${idEvent}.`
+            return response
+        }
+        const isOwner = await this.isEventCreator(idEvent, idUser)
+        if(isOwner.count == 0) {
+            response.error = 400
+            response.errorMessage = `El usuario (${idUser}) no es el creador del evento (${idEvent})`
             return response
         }
         response.data = await repo.deleteEvent(idEvent, idUser);
         return response;
     }
-    patchRankingEvent = async (idEvent, idUser, rating) => {
+    patchRankingEvent = async (idEvent, idUser, rating, description, attended, observations) => {
         const repo = new EventRepository();
-        let response;
-        if(!this.getEventById(idEvent)){
+        let response = {};
+        if(!await this.getEventById(idEvent)){
             response.error = 404
             response.errorMessage = `No se encontraron resultados para el id: ${idEvent}.`
             return response
         }
-        if(this.getEventStartDate(idEvent) < new Date()) {
+        const date = await this.getEventStartDate(idEvent)
+        if(date.start_date < new Date()) {
             response.error = 400
-            response.errorMessage = `No se pudo rankear el evento: ${idEvent} debido a que todavía no finalizó.`
+            response.errorMessage = `No se pudo rankear el evento (${idEvent}) debido a que todavía no finalizó.`
             return response
         }
-        if(this.checkInscriptionToEvent(idEvent, idUser) > 0){
+        const count = await this.checkInscriptionToEvent(idEvent, idUser)
+        if(count.count == 0){
             response.error = 400
             response.errorMessage = `El usuario: ${idUser}, no está registrado al evento: ${idEvent}.`
             return response
         }
-        response.data = await repo.patchRankingEvent(idEvent, idUser, rating);
+        response.data = await repo.patchRankingEvent(idEvent, idUser, rating, description, attended, observations);
         return response;
     }
     getAllLocations = async () => {
@@ -179,6 +203,11 @@ export default class EventService {
     getEventStartDate = async (idEvent) => {
         const repo = new EventRepository();
         const returnArray = await repo.getEventStartDate(idEvent);
+        return returnArray;
+    }
+    isEventCreator = async (idEvent, idUser) => {
+        const repo = new EventRepository();
+        const returnArray = await repo.isEventCreator(idEvent, idUser);
         return returnArray;
     }
 }

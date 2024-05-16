@@ -56,14 +56,14 @@ router.get("/:id/enrollment", async (req, res) => {
     }
 });
 
-router.post("/:id/enrollment", async (req, res) => { // comprobar si anda
+router.post("/:id/enrollment", async (req, res) => {
     const idEvent = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
         if(idEvent == 0) throw (`Id invalido.`)
         const access_token = req.headers.authorization.split(' ')[1];
         let payloadOriginal = await jwt.verify(access_token, process.env.SECRET_KEY)
         const response = await svc.postInscribeEvent(idEvent, payloadOriginal.id)
-        if (response.error === 400) throw (response.errorMessage)
+        if (response.error === 400) throw response.errorMessage
         else if (response.error === 404) return res.status(404).send({success: false, message: response.errorMessage})
         return response.data > 0 ? res.status(201).send({success: true, message: "Registro exitoso!"}) : res.status(404).send({success: false, message:`No se pudo registrar al evento.`});
     }
@@ -72,7 +72,7 @@ router.post("/:id/enrollment", async (req, res) => { // comprobar si anda
     }
 });
 
-router.delete("/:id/enrollment", async (req, res) => { // comprobar si anda
+router.delete("/:id/enrollment", async (req, res) => {
     const idEvent = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
         if(idEvent == 0) throw (`Id invalido.`)
@@ -81,7 +81,7 @@ router.delete("/:id/enrollment", async (req, res) => { // comprobar si anda
         const response = await svc.deleteInscriptionEvent(idEvent, payloadOriginal.id)
         if (response.error === 400) throw (response.errorMessage)
         else if (response.error === 404) return res.status(404).send({success: false, message: response.errorMessage})
-        return response > 0 ? res.status(201).send({success: true, message: "Inscripción eliminada exitosamente!"}) : res.status(404).send({success: false, message: `No se pudo eliminar la inscripción al evento.`});
+        return response.data > 0 ? res.status(201).send({success: true, message: "Inscripción eliminada exitosamente!"}) : res.status(404).send({success: false, message: `No se pudo eliminar la inscripción al evento.`});
     }
     catch(e){
         return res.status(400).send({success: false, error: e})
@@ -123,7 +123,7 @@ router.post("/createEvent", async (req, res) => {
     }
 });
 
-router.put("/updateEvent", async (req, res) => { // comprobar si anda
+router.put("/updateEvent", async (req, res) => {
     const idEvent = ValidacionesHelper.getIntegerOrDefault(req.body.id, 0)
     const name = ValidacionesHelper.getStringOrDefault(req.body.name, '')
     const description = ValidacionesHelper.getStringOrDefault(req.body.description, '')
@@ -140,14 +140,15 @@ router.put("/updateEvent", async (req, res) => { // comprobar si anda
         let payloadOriginal = await jwt.verify(access_token, process.env.SECRET_KEY)
         const response = await svc.putUpdateEvent(idEvent, name, description, idEventCategory, idEventLocation, durationMinutes, price, enabledForEnrollment, maxAssistance, payloadOriginal.id, startDate)
         if (response.error === 404) return res.status(404).send({success: false, message: response.errorMessage})
-        return response > 0 ? res.status(201).send({success: true, results: "Evento creado con exito!"}) : res.status(404).send({success: false, message:`No se pudo modificar el evento.`});
+        if (response.error === 400) throw (response.errorMessage)
+        return response.data > 0 ? res.status(201).send({success: true, results: "Evento modificado con exito!"}) : res.status(404).send({success: false, message:`No se pudo modificar el evento.`});
     }
     catch(e){
         return res.status(400).send({success: false, error: e})
     }
 });
 
-router.delete("/deleteEvent/:id", async (req, res) => { // comprobar si anda
+router.delete("/deleteEvent/:id", async (req, res) => {
     const idEvent = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
     try{
         if(idEvent == 0) { return res.status(404).send(`Id invalido.`) }
@@ -155,7 +156,7 @@ router.delete("/deleteEvent/:id", async (req, res) => { // comprobar si anda
         let payloadOriginal = await jwt.verify(access_token, process.env.SECRET_KEY)
         const response = await svc.deleteEvent(idEvent, payloadOriginal.id)
         if (response.error === 404) return res.status(404).send({success: false, message: response.errorMessage})
-        return response > 0 ? res.status(201).send({success: true, results: "Evento eliminado con exito!"}) : res.status(404).send({success: false, message:`No se pudo eliminar el evento.`});
+        return response.data > 0 ? res.status(201).send({success: true, results: "Evento eliminado con exito!"}) : res.status(404).send({success: false, message:`No se pudo eliminar el evento.`});
     }
     catch(e){
         return res.status(400).send({success: false, error: e})
@@ -164,18 +165,21 @@ router.delete("/deleteEvent/:id", async (req, res) => { // comprobar si anda
 
 // Hacer rating de un evento
 
-router.patch("/:id/enrollment/:entero", async (req, res) => { // comprobar si anda
+router.patch("/:id/enrollment/:entero", async (req, res) => {
     const idEvent = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
-    const rating = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
+    const rating = ValidacionesHelper.getIntegerOrDefault(req.params.entero, 0)
+    const description = ValidacionesHelper.getStringOrDefault(req.body.description, '')
+    const attended = ValidacionesHelper.getBooleanOrDefault(req.body.attended, '')
+    const observations = ValidacionesHelper.getStringOrDefault(req.body.observations, '')
     try{
         if(idEvent == 0) throw (`Id invalido.`)
         if(rating > 10 || rating < 0) throw ("El valor del rating no se encuentra entre los números 1 al 10") 
         const access_token = req.headers.authorization.split(' ')[1];
         let payloadOriginal = await jwt.verify(access_token, process.env.SECRET_KEY)
-        const response = await svc.patchRankingEvent(idEvent, payloadOriginal.id, rating)
+        const response = await svc.patchRankingEvent(idEvent, payloadOriginal.id, rating, description, attended, observations)
         if (response.error === 404) return res.status(404).send({success: false, message: response.errorMessage})
         if (response.error === 400) throw (response.errorMessage)
-        return response > 0 ? res.status(200).send({success: true, results: "Evento rankeado con exito!"}) : res.status(404).send({success: false, message:`No se pudo rankear el evento.`});
+        return response.data > 0 ? res.status(200).send({success: true, results: "Evento rankeado con exito!"}) : res.status(404).send({success: false, message:`No se pudo rankear el evento.`});
     }
     catch(e){
         return res.status(400).send({success: false, error: e})
