@@ -5,7 +5,7 @@
 -- Dumped from database version 16.2
 -- Dumped by pg_dump version 16.2
 
--- Started on 2024-05-09 16:06:11
+-- Started on 2024-05-16 19:52:55
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -340,7 +340,8 @@ INSERT INTO public.event_categories VALUES (1, 'Musica', 1);
 -- Data for Name: event_enrollments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.event_enrollments VALUES (1, 2, 2, 'Alto show', true, 'Terrible', 5, '2024-01-21 03:00:00-03');
+INSERT INTO public.event_enrollments VALUES (1, 2, 2, 'Alto show', true, 'Terrible', 6, '2024-01-21 03:00:00-03');
+INSERT INTO public.event_enrollments VALUES (22, 2, 3, 'ASDASD', true, 'Una locura', 6, '2024-05-16 19:12:39.610234-03');
 
 
 --
@@ -368,7 +369,8 @@ INSERT INTO public.event_tags VALUES (2, 2, 2);
 -- Data for Name: events; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.events VALUES (2, 'Taylor Swift', 'Un alto show', 1, 1, 210, 15500, true, 120000, 2, '2024-03-21 03:00:00-03');
+INSERT INTO public.events VALUES (2, 'Taylor Swift', 'Un alto show', 1, 1, 210, 15500, true, 120000, 2, '2024-07-21 03:00:00-03');
+INSERT INTO public.events VALUES (3, 'Milo Jota', 'Un terible show', 1, 1, 210, 20000, true, 100000, 3, '2024-06-21 03:00:00-03');
 
 
 --
@@ -386,7 +388,8 @@ INSERT INTO public.locations VALUES (1, 'Nuñez', 1, -34.548805236816406, -58.46
 -- Data for Name: provinces; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.provinces VALUES (1, 'Ciudad Autónoma de Buenos Aires', 'Ciudad Autónoma de Buenos Aires', -34.61444091796875, -58.445877075195312, 1);
+INSERT INTO public.provinces VALUES (1, 'Ciudad Autónoma de Buenos Aires', 'Ciudad Autónoma de Buenos Aires', -34.61444091796875, -58.44587707519531, 1);
+INSERT INTO public.provinces VALUES (7, 'Chaco Provincia', 'Provincia de Chacoo', -24.89508628845215, -59.93218994140625, 2);
 
 
 --
@@ -406,6 +409,8 @@ INSERT INTO public.tags VALUES (2, 'Pop');
 --
 
 INSERT INTO public.users VALUES (2, 'Julian', 'Schiffer', 'Jschiffer', '1234');
+INSERT INTO public.users VALUES (3, 'Rodolfo', 'Gomez', 'rodogom', '1234');
+INSERT INTO public.users VALUES (4, 'Rodolfo', 'Gomez', 'rodogom', '1234');
 
 
 --
@@ -414,7 +419,7 @@ INSERT INTO public.users VALUES (2, 'Julian', 'Schiffer', 'Jschiffer', '1234');
 -- Name: event_categories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.event_categories_id_seq', 1, true);
+SELECT pg_catalog.setval('public.event_categories_id_seq', 2, true);
 
 
 --
@@ -423,7 +428,7 @@ SELECT pg_catalog.setval('public.event_categories_id_seq', 1, true);
 -- Name: event_enrollments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.event_enrollments_id_seq', 1, true);
+SELECT pg_catalog.setval('public.event_enrollments_id_seq', 22, true);
 
 
 --
@@ -450,7 +455,7 @@ SELECT pg_catalog.setval('public.event_tags_id_seq', 2, true);
 -- Name: events_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.events_id_seq', 2, true);
+SELECT pg_catalog.setval('public.events_id_seq', 4, true);
 
 
 --
@@ -468,7 +473,7 @@ SELECT pg_catalog.setval('public.locations_id_seq', 1, true);
 -- Name: provinces_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.provinces_id_seq', 2, true);
+SELECT pg_catalog.setval('public.provinces_id_seq', 7, true);
 
 
 --
@@ -486,7 +491,7 @@ SELECT pg_catalog.setval('public.tags_id_seq', 2, true);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 2, true);
+SELECT pg_catalog.setval('public.users_id_seq', 4, true);
 
 
 --
@@ -658,7 +663,7 @@ ALTER TABLE ONLY public.locations
     ADD CONSTRAINT fk_locations_provinces FOREIGN KEY (id_province) REFERENCES public.provinces(id) NOT VALID;
 
 
--- Completed on 2024-05-09 16:06:11
+-- Completed on 2024-05-16 19:52:55
 
 --
 -- PostgreSQL database dump complete
