@@ -32,6 +32,23 @@ export default class ProvinceRepository {
         }
         return response;
     }
+    getLocationsByIdAsync = async (id) => {
+        let response = null;
+        const client = new Client(config);
+        try {
+            await client.connect();
+            const sql = `SELECT * FROM locations WHERE id_province = $1`;
+            const values = [id];
+            const result = await client.query(sql, values);
+            await client.end();
+            response = result.rows;
+        } catch (error) {
+            console.log(error);
+        }
+        return response;
+    }
+
+
     createAsync = async (entity) => {
         let response = null;
         const client = new Client(config);

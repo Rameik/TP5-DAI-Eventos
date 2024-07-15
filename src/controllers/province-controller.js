@@ -16,6 +16,17 @@ router.get("/:id", async (req, res) => {
     return response ? res.status(200).send(response) : res.status(404).send({success: false, message: `No existe una provincia con el id: ${id}`});
 })
 
+router.get("/:id/locations", async (req, res) => {
+    const id = ValidacionesHelper.getIntegerOrDefault(req.params.id, 0)
+    try {
+        const response = await svc.getLocationsByIdAsync(id);
+        console.log(response)
+        return response.length > 0 ? res.status(200).send(response) : res.status(404).send({success: false, message: `No existe una provincia con el id: ${id}`});
+    } catch (error) {
+        return res.status(400).send({success: false, error: error})
+    }
+})
+
 router.post("", async (req, res) => {
     try {
         const name = ValidacionesHelper.getStringOrDefault(req.body.name, '');

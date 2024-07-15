@@ -231,7 +231,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/event/?name=taylor&category=Musica&startdate=2024-03-03&tag=Rock",
+							"raw": "http://localhost:3000/api/event/?name=taylor&category=Musica&startdate=2024-07-21&tag=Rock",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -253,7 +253,7 @@
 								},
 								{
 									"key": "startdate",
-									"value": "2024-03-03"
+									"value": "2024-07-21"
 								},
 								{
 									"key": "tag",
@@ -926,6 +926,28 @@
 							"path": [
 								"api",
 								"province"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getProvinceLocations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/province/1/locations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"province",
+								"1",
+								"locations"
 							]
 						}
 					},

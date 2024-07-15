@@ -7,10 +7,10 @@ import 'dotenv/config'
 export const router = Router();
 const svc = new EventService(); 
 
-router.get("", async (req, res) => {
-    const response = await svc.getAllAsync();
-    return response != null ? res.status(200).json(response) : res.status(500).send(`Error interno.`);
-});
+// router.get("", async (req, res) => {
+//     const response = await svc.getAllAsync();
+//     return response != null ? res.status(200).json(response) : res.status(500).send(`Error interno.`);
+// });
 
 router.get("", async (req, res) => {
     const name = ValidacionesHelper.getStringOrDefault(req.query.name, '')
@@ -31,7 +31,7 @@ router.get("/:id", async (req, res) => {
     try{
         if( id == 0 ) throw (`Id invalido.`)
         const response = await svc.getEventById(id);
-        return response.length > 0 ? res.status(200).json(response) : res.status(404).send(`No se encontró el id: ${id}`);
+        return response != undefined ? res.status(200).json(response) : res.status(404).send(`No se encontró el id: ${id}`);
     }
     catch(e){
         return res.status(400).send({success: false, error: e})
@@ -49,7 +49,7 @@ router.get("/:id/enrollment", async (req, res) => {
         const rating = ValidacionesHelper.getIntegerOrDefault(req.query.rating, '') 
 
         const response = await svc.getEventParticipants(id, firstName, lastName, user, attended, rating);
-        return response ? res.status(200).json(response) : res.status(404).send(`No se encontraron resultados.`);
+        return response.length > 0 ? res.status(200).json(response) : res.status(404).send(`No se encontraron resultados.`);
     }
     catch(e){
         return res.status(400).send({success: false, error: e})
