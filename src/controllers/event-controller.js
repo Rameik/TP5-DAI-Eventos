@@ -7,10 +7,10 @@ import 'dotenv/config'
 export const router = Router();
 const svc = new EventService(); 
 
-// router.get("", async (req, res) => {
-//     const response = await svc.getAllAsync();
-//     return response != null ? res.status(200).json(response) : res.status(500).send(`Error interno.`);
-// });
+router.get("", async (req, res) => {
+    const response = await svc.getAllAsync();
+    return response != null ? res.status(200).json(response) : res.status(500).send(`Error interno.`);
+});
 
 router.get("", async (req, res) => {
     const name = ValidacionesHelper.getStringOrDefault(req.query.name, '')
